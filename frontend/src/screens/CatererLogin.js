@@ -1,86 +1,35 @@
-import React, { useState, useRef } from "react";
-import { View, Text, TextInput, Button, Alert } from "react-native";
-import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
-import { app, auth } from "../config/firebaseConfig";
-import { PhoneAuthProvider, signInWithCredential } from "firebase/auth";
+// src/screens/CatererDashboard.js
+import React from "react";
+import { View, Text, Button } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { signOut } from "firebase/auth";
+import { auth } from "../config/firebaseConfig";
 
-export default function CatererLogin() {
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [verificationId, setVerificationId] = useState(null);
-  const [verificationCode, setVerificationCode] = useState("");
-  const recaptchaVerifier = useRef(null);
+export default function CatererDashboard() {
+  const navigation = useNavigation();
 
-  const sendVerification = async () => {
-    try {
-      const phoneProvider = new PhoneAuthProvider(auth);
-      const verificationId = await phoneProvider.verifyPhoneNumber(
-        phoneNumber,
-        recaptchaVerifier.current
-      );
-      setVerificationId(verificationId);
-      Alert.alert("OTP Sent!", "Check your messages for the verification code.");
-    } catch (error) {
-      Alert.alert("Error sending OTP", error.message);
-    }
-  };
-
-  const confirmCode = async () => {
-    try {
-      const credential = PhoneAuthProvider.credential(
-        verificationId,
-        verificationCode
-      );
-      await signInWithCredential(auth, credential);
-     Alert.alert("Login successful!");
-     navigation.replace("CatererDashboard");
-    } catch (error) {
-      Alert.alert("Invalid Code", error.message);
-    }
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigation.replace("CatererLogin");
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
-      <FirebaseRecaptchaVerifierModal
-        ref={recaptchaVerifier}
-        firebaseConfig={app.options}
-      />
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text style={{ fontSize: 26, fontWeight: "bold", marginBottom: 20 }}>
+        Caterer Dashboard
+      </Text>
 
-      <Text style={{ fontSize: 24, marginBottom: 20 }}>Caterer Login Page</Text>
+      <View style={{ marginVertical: 10, width: "60%" }}>
+        <Button title="Edit Menu" onPress={() => navigation.navigate("EditMenu")} />
+      </View>
 
-      <TextInput
-        placeholder="+91 9876543210"
-        onChangeText={setPhoneNumber}
-        keyboardType="phone-pad"
-        style={{
-          borderWidth: 1,
-          borderColor: "#ccc",
-          borderRadius: 8,
-          padding: 10,
-          width: "100%",
-          marginBottom: 15,
-        }}
-      />
+      <View style={{ marginVertical: 10, width: "60%" }}>
+        <Button title="Feedback Summary" onPress={() => navigation.navigate("FeedbackSummary")} />
+      </View>
 
-      <Button title="Send OTP" onPress={sendVerification} />
-
-      {verificationId ? (
-        <View style={{ marginTop: 20, width: "100%" }}>
-          <TextInput
-            placeholder="Enter verification code"
-            onChangeText={setVerificationCode}
-            keyboardType="number-pad"
-            style={{
-              borderWidth: 1,
-              borderColor: "#ccc",
-              borderRadius: 8,
-              padding: 10,
-              width: "100%",
-              marginBottom: 10,
-            }}
-          />
-          <Button title="Confirm Code" onPress={confirmCode} />
-        </View>
-      ) : null}
+      <View style={{ marginVertical: 10, width: "60%" }}>
+        <Button title="Logout" color="red" onPress={handleLogout} />
+      </View>
     </View>
   );
 }
