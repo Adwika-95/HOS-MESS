@@ -31,8 +31,8 @@ export default function CatererLogin() {
         verificationCode
       );
       await signInWithCredential(auth, credential);
-      Alert.alert("Login Success!", "You are now logged in as a Caterer.");
-      // TODO: Navigate to your dashboard page here
+     Alert.alert("Login successful!");
+     navigation.replace("CatererDashboard");
     } catch (error) {
       Alert.alert("Invalid Code", error.message);
     }
