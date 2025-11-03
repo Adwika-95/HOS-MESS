@@ -1,0 +1,11 @@
+# Node dependencies
+node_modules/
+# Expo build artifacts
+.expo/
+.expo-shared/
+# Logs
+npm-debug.log
+yarn-error.log
+# macOS files 
+.DS_Store
+Thumbs.db
