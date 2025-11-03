@@ -1,62 +1,86 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { View, Text, TextInput, Button, Alert } from "react-native";
-import { auth } from "../services/firebaseConfig";
+import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+import { app, auth } from "../config/firebaseConfig";
 import { PhoneAuthProvider, signInWithCredential } from "firebase/auth";
 
-const CatererLogin = () => {
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
+export default function CatererLogin() {
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [verificationId, setVerificationId] = useState(null);
+  const [verificationCode, setVerificationCode] = useState("");
+  const recaptchaVerifier = useRef(null);
 
-  const sendOTP = async () => {
+  const sendVerification = async () => {
     try {
-      const provider = new PhoneAuthProvider(auth);
-      const verificationId = await provider.verifyPhoneNumber(`+91${phone}`, window.recaptchaVerifier);
+      const phoneProvider = new PhoneAuthProvider(auth);
+      const verificationId = await phoneProvider.verifyPhoneNumber(
+        phoneNumber,
+        recaptchaVerifier.current
+      );
       setVerificationId(verificationId);
-      Alert.alert("OTP sent successfully!");
+      Alert.alert("OTP Sent!", "Check your messages for the verification code.");
     } catch (error) {
       Alert.alert("Error sending OTP", error.message);
     }
   };
 
-  const verifyOTP = async () => {
+  const confirmCode = async () => {
     try {
-      const credential = PhoneAuthProvider.credential(verificationId, otp);
+      const credential = PhoneAuthProvider.credential(
+        verificationId,
+        verificationCode
+      );
       await signInWithCredential(auth, credential);
-      Alert.alert("Login successful!");
+      Alert.alert("Login Success!", "You are now logged in as a Caterer.");
+      // TODO: Navigate to your dashboard page here
     } catch (error) {
-      Alert.alert("Invalid OTP", error.message);
+      Alert.alert("Invalid Code", error.message);
     }
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", padding: 20 }}>
-      <Text style={{ fontSize: 24, marginBottom: 20 }}>Caterer Login</Text>
-
-      <TextInput
-        placeholder="Phone Number"
-        keyboardType="phone-pad"
-        value={phone}
-        onChangeText={setPhone}
-        style={{ borderWidth: 1, padding: 10, marginBottom: 10 }}
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
+      <FirebaseRecaptchaVerifierModal
+        ref={recaptchaVerifier}
+        firebaseConfig={app.options}
       />
 
-      <Button title="Send OTP" onPress={sendOTP} />
+      <Text style={{ fontSize: 24, marginBottom: 20 }}>Caterer Login Page</Text>
 
-      {verificationId && (
-        <>
+      <TextInput
+        placeholder="+91 9876543210"
+        onChangeText={setPhoneNumber}
+        keyboardType="phone-pad"
+        style={{
+          borderWidth: 1,
+          borderColor: "#ccc",
+          borderRadius: 8,
+          padding: 10,
+          width: "100%",
+          marginBottom: 15,
+        }}
+      />
+
+      <Button title="Send OTP" onPress={sendVerification} />
+
+      {verificationId ? (
+        <View style={{ marginTop: 20, width: "100%" }}>
           <TextInput
-            placeholder="Enter OTP"
+            placeholder="Enter verification code"
+            onChangeText={setVerificationCode}
             keyboardType="number-pad"
-            value={otp}
-            onChangeText={setOtp}
-            style={{ borderWidth: 1, padding: 10, marginTop: 20 }}
+            style={{
+              borderWidth: 1,
+              borderColor: "#ccc",
+              borderRadius: 8,
+              padding: 10,
+              width: "100%",
+              marginBottom: 10,
+            }}
           />
-          <Button title="Verify OTP" onPress={verifyOTP} />
-        </>
-      )}
+          <Button title="Confirm Code" onPress={confirmCode} />
+        </View>
+      ) : null}
     </View>
   );
-};
-
-export default CatererLogin;
+}

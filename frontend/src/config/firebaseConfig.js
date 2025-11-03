@@ -1,3 +1,4 @@
+// ✅ src/config/firebaseConfig.js
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 const firebaseConfig = {
@@ -9,5 +10,5 @@ const firebaseConfig = {
   appId: "1:106816714519:web:6dbe59a3d34df6c1b1a952",
   measurementId: "G-50GQBL5R2T"
 };
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
